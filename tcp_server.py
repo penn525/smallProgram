@@ -4,7 +4,7 @@
 # Time: Jun 25, 2019 22:26
 # Description: tcp 服务端
 
-from socket import socket
+from socket import socket, SO_REUSEADDR, SOL_SOCKET
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
@@ -12,21 +12,28 @@ class TcpServer():
     def __init__(self):
         ip_port = ('', 9090)
         self.server_socket = socket()
+        # 解决端口重新绑定问题
+        self.server_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.server_socket.bind(ip_port)
         self.thread_pool = ThreadPoolExecutor(5)
 
     def start(self):
         # 主线程用于接收新的连接
         self.server_socket.listen()
-        while True:
-            conn = self.server_socket.accept()
-            print('Get connection from {}'.format(conn[1]))
-            # 没接受到一个连接，交给线程池去处理
-            self.thread_pool.submit(self.handle_conn, conn)
-            # t = Thread(target=self.handle_conn, args=(conn, ))
-            # print(conn)
-            # t.start()
-            # t.join()
+        try:
+            while True:
+                conn = self.server_socket.accept()
+                print('Get connection from {}'.format(conn[1]))
+                # 没接受到一个连接，交给线程池去处理
+                self.thread_pool.submit(self.handle_conn, conn)
+                # t = Thread(target=self.handle_conn, args=(conn, ))
+                # print(conn)
+                # t.start()
+                # t.join()
+        finally:
+            self.server_socket.close()
+        
+        
 
     def handle_conn(self, conn):
         # 子线程只负责接收和发送消息

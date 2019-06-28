@@ -10,7 +10,7 @@ from threading import Thread
 
 class TcpClient():
     def __init__(self):
-        self.dest_ip_port = ('', 9090)
+        self.dest_ip_port = ('', 8888)
         self.socket_client = socket()
         self.thread_pool = ThreadPoolExecutor(2)
 
